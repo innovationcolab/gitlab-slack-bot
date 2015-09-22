@@ -26,7 +26,7 @@ app.post('/msg.json', function (req, res) {
   var branch = req.body.ref.split('/').pop();
   var repoName = "<" + req.body.repository.homepage + "|" + req.body.repository.git_ssh_url.split(':').pop() + ">";
 
-  var commtList = req.body.commits;
+  var commitList = req.body.commits;
 
   var request = require('request');
 
