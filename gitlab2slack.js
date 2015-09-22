@@ -34,7 +34,7 @@ app.post('/msg.json', function (req, res) {
 
     var author = elem.author.name;
     var commitURL = elem.url;
-    var commitID = "<" + elem.url + "|" + req.body.checkout_sha.substring(0, 7) + ">";
+    var commitID = "<" + elem.url + "|" + elem.id.substring(0, 7) + ">";
     var commitMsg = elem.message;
 
 
