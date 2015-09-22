@@ -48,7 +48,7 @@ app.post('/msg.json', function (req, res) {
           "color": "#00FFFF",
           "fields": [
             {
-              "title": "Commit: " + req.body.checkout_sha.substring(0, 7) + " by " + author,
+              "title": "Commit: " + elem.id.substring(0, 7) + " by " + author,
               "value": commitMsg,
               "short": false
             }
