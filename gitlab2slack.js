@@ -7,7 +7,7 @@
   * To get started, simply replace the value in slackURL with your slack incoming webhook url.
   */
 
-var slackURL = "replace this placeholder with your slack incoming webhook url";
+var slackURL = process.env.SLACK_URL;
 
 var express = require('express');
 var app = express();
