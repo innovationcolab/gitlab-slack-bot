@@ -84,7 +84,7 @@ app.post('/msg.json', function (req, res) {
   res.send("ok");
 });
 
-var server = app.listen(9000, function () {
+var server = app.listen(3000, function () {
   var host = server.address().address;
   var port = server.address().port;
 
