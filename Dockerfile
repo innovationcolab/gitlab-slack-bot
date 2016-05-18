@@ -16,7 +16,7 @@ RUN   cd /srv/gitlab2slack-autobot ; npm install
 RUN   npm install -g pm2 && \
       pm2 startup
 
-CMD   pm2 start npm --name "gitlab2slack-autobot" -i max -- start && pm2 save
+CMD   pm2 start $(which npm) --name "gitlab2slack-autobot" -i max --no-daemon --no-automation -- start
 
 # By default all applications run on port 3000 in the container.
 # It is not recommended to change the port.

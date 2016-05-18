@@ -4,6 +4,7 @@
   "description": "",
   "main": "gitlab2slack.js",
   "scripts": {
+    "start": "node gitlab2slack.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
