@@ -10,6 +10,10 @@ https://hub.docker.com/r/victorxw/gitlab-slack-bot/
 
 Feed the slack incoming webhook url to the environment variable `SLACK_URL`, and run the container.
 
+```bash
+docker run -d --name [app name] -e "SLACK_URL=[incoming webhook url]" -p [host port]:3000 --restart=always victorxw/gitlab-slack-bot
+```
+
 The container listens by default on port `3000`. If you'd like to run multiple instances of this bot (to post to different slack teams), or you'd like the bot to listen on a different port on the host, use the `-p` options to run the container.
 
 ### Using Plain Node.js
