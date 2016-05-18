@@ -1,12 +1,25 @@
-FROM    debian:jessie
+# Before using/committing this Dockerfile into your git repository,
+# make sure to replace arguments that contains [XXX] with their actual names.
 
-RUN     apt-get update
-RUN     apt-get install -y curl
-RUN     curl -sL https://deb.nodesource.com/setup_5.x | bash -
-RUN     apt-get install -y nodejs
+FROM  node:6.2
 
-COPY    . /src
-RUN     cd /src ; npm install
+ADD   . /srv/gitlab2slack-autobot
+RUN   cd /srv/gitlab2slack-autobot ; npm install
 
-EXPOSE  3000
-CMD     ["node", "/src/gitlab2slack.js"]
+# All product related commands should be under npm management.
+# e.g. 'npm run build', 'npm test', 'npm start' etc.
+
+# Uncomment the following line if this product requires building procedures.
+# RUN     npm run build;
+
+# Starting product
+RUN   npm install -g pm2 &&
+      pm2 startup
+
+CMD   pm2 start npm --name "gitlab2slack-autobot" -i max -- start && pm2 save
+
+# By default all applications run on port 3000 in the container.
+# It is not recommended to change the port.
+# If you'd like the application to listen on a different port,
+# use `-p` to expose port 3000 in container to another port on host.
+EXPOSE 3000

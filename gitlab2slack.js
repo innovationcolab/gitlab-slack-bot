@@ -2,91 +2,126 @@
   * The gitlab2slack autobot
   * author: Victor Wang (xw72@duke.edu)
   *
-  * This is a autobot that catches gitlab push event webhook and generates a formatted message to post in designated slack group.
+  * This is a autobot that catches gitlab event webhook and generates a formatted message to post in designated slack channel.
   *
   * To get started, simply replace the value in slackURL with your slack incoming webhook url.
   */
 
-var slackURL = process.env.SLACK_URL;
+// Rollbar Token
+const POST_SERVER_ITEM_ACCESS_TOKEN = process.env.POST_SERVER_ITEM_ACCESS_TOKEN;
+const isProd = process.env.NODE_ENV === 'production' ? true : false;
 
-var express = require('express');
-var app = express();
+const express = require('express');
+const bodyParser = require('body-parser');
+const debug = require('debug')('gitlab2slack');
+const rollbar = isProd ? require('rollbar') : () => {};
 
-var bodyParser = require('body-parser');
-
+const app = express();
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+// production error handling
+if (isProd) {
+  rollbar.init(POST_SERVER_ITEM_ACCESS_TOKEN, {
+    environment: process.env.NODE_ENV,
+  });
+  app.use(rollbar.errorHandler(POST_SERVER_ITEM_ACCESS_TOKEN)); // for expressjs error handler
+  rollbar.handleUncaughtExceptions(POST_SERVER_ITEM_ACCESS_TOKEN, {
+    exitOnUncaughtException: true,
+  });
+}
+
 
 app.get(['/', '/msg.json'], function (req, res) {
   res.send('GitLab to Slack auto-posting service is running');
 });
 
+// handlers
+const { handleComment, handleIssue, handleMergeRequest, handlePush, handleTagPush } = require('./handlers.js');
+
 app.post('/msg.json', function (req, res) {
-
-  var branch = req.body.ref.split('/').pop();
-  var repoName = "<" + req.body.repository.homepage + "|" + req.body.repository.git_ssh_url.split(':').pop() + ">";
-
-  var commitList = req.body.commits;
-
-  var request = require('request');
-
-  commitList.forEach(function (elem) {
-
-    var author = elem.author.name;
-    var commitURL = elem.url;
-    var commitID = "<" + elem.url + "|" + elem.id.substring(0, 7) + ">";
-    var commitMsg = elem.message;
-
-
-    var toSlackMsg = {
-      username: "gitlab-bot",
-      "icon_emoji": ":ghost:",
-      "attachments": [
-        {
-          "fallback": author + " pushed to branch " + branch + " at " + repoName + ". Commit SHA: " + commitID,
-          "pretext": author + " pushed to branch " + branch + " at " + repoName + ". Commit SHA: " + commitID,
-          "color": "#00FFFF",
-          "fields": [
-            {
-              "title": "Commit: " + elem.id.substring(0, 7) + " by " + author,
-              "value": commitMsg,
-              "short": false
-            }
-          ]
-        }
-      ]
-
-    };
-
-    // TODO: implement first push in a branch
-    var firstInBranch = false;
-    if (req.body.before === '0000000000000000000000000000000000000000') {
-      firstInBranch = true;
-    }
-
-    var options = {
-      uri:slackURL,
-      method: 'POST',
-      json: toSlackMsg
-    };
-
-    request.post(options, function (err, response, body) {
-      if (err) {
-        console.err(err);
+  const eventType = req.body.object_kind;
+  switch(eventType) {
+    case 'push':
+      handlePush(req.body)
+        .then((response) => {
+          res.send("ok");
+        })
+        .catch((error) => {
+          if (isProd) {
+            rollbar.reportMessageWithPayloadData("Push event error", error);
+          } else {
+            console.error(error);
+          }
+        });
+      break;
+    case 'tag_push':
+      handleTagPush(req.body)
+        .then((response) => {
+          res.send("ok");
+        })
+        .catch((error) => {
+          if (isProd) {
+            rollbar.reportMessageWithPayloadData("Tag Push event error", error);
+          } else {
+            console.error(error);
+          }
+        });
+      break;
+    case 'issue':
+      handleIssue(req.body)
+        .then((response) => {
+          res.send("ok");
+        })
+        .catch((error) => {
+          if (isProd) {
+            rollbar.reportMessageWithPayloadData("Issue event error", error);
+          } else {
+            console.error(error);
+          }
+        });
+      break;
+    case 'note':
+      handleComment(req.body)
+        .then((response) => {
+          res.send("ok");
+        })
+        .catch((error) => {
+          if (isProd) {
+            rollbar.reportMessageWithPayloadData("Comment event error", error);
+          } else {
+            console.error(error);
+          }
+        });
+      break;
+    case 'merge_request':
+      handleMergeRequest(req.body)
+        .then((response) => {
+          res.send("ok");
+        })
+        .catch((error) => {
+          if (isProd) {
+            rollbar.reportMessageWithPayloadData("Merge Request event error", error);
+          } else {
+            console.error(error);
+          }
+        });
+      break;
+    default:
+      if (isProd) {
+        rollbar.reportMessage("Unsupported event", error);
+      } else {
+        console.error(error);
       }
-      else {
-        console.log(body);
-      }
-    });
-
-  });
-
-  res.send("ok");
+  }
 });
 
-var server = app.listen(3000, function () {
-  var host = server.address().address;
-  var port = server.address().port;
+const server = app.listen(3000, () => {
+  const host = server.address().address;
+  const port = server.address().port;
 
-  console.log('Gitlab to Slack post service listening at http://%s:%s', host, port);
+  if (isProd) {
+    rollbar.reportMessage(`Gitlab to Slack post service listening at http://${host}:${port}`, "info");
+  } else {
+    console.log(`Gitlab to Slack post service listening at http://${host}:${port}`);
+  }
 });
