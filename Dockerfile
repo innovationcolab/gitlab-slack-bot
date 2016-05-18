@@ -4,6 +4,7 @@
 FROM  node:6.2
 
 ADD   . /srv/gitlab2slack-autobot
+WORKDIR /srv/gitlab2slack-autobot
 RUN   cd /srv/gitlab2slack-autobot ; npm install
 
 # All product related commands should be under npm management.
