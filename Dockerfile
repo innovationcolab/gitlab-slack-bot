@@ -13,7 +13,7 @@ RUN   cd /srv/gitlab2slack-autobot ; npm install
 # RUN     npm run build;
 
 # Starting product
-RUN   npm install -g pm2 &&
+RUN   npm install -g pm2 && \
       pm2 startup
 
 CMD   pm2 start npm --name "gitlab2slack-autobot" -i max -- start && pm2 save
