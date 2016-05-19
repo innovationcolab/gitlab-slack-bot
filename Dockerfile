@@ -3,6 +3,8 @@
 
 FROM  node:6.2
 
+ENV   NODE_ENV production
+
 ADD   . /srv/gitlab2slack-autobot
 WORKDIR /srv/gitlab2slack-autobot
 RUN   cd /srv/gitlab2slack-autobot ; npm install
