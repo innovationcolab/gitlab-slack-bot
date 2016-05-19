@@ -1,6 +1,6 @@
 {
   "name": "gitlab2slack-autobot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "gitlab2slack.js",
   "scripts": {
