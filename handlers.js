@@ -30,7 +30,7 @@ function handleBuild(body) {
   // body.ref can either be the tag name for Tag or the branch name for Commit
   const subjectName = body.isTagged ? body.ref : `<${body.repository.homepage}/commit/${commit.sha}|${commit.sha.substring(0, 7)}> on branch \`${body.ref}\``;
   const buildStage = body.build_status === 'success' ? `\`${body.build_stage}\` stage` : `\`${body.build_stage}\` stage <!channel|@channel>`;
-  const deployMsg = body.build_stage === 'deploy' ? 'and is being *deployed* (Hurrah!!) <!channel|@channel>' : '';
+  const deployMsg = body.build_stage === 'deploy' ? body.build_status === 'success' ? 'and is being *deployed* (Hurrah!!) <!channel|@channel>' : '' : '';
 
   const toSlackMsg = {
     username: "gitlab-bot",
