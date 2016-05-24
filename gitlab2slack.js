@@ -36,7 +36,7 @@ app.get(['/', '/msg.json'], function (req, res) {
 });
 
 // handlers
-const { handleComment, handleIssue, handleMergeRequest, handlePush, handleTagPush } = require('./handlers.js');
+const { handleBuild, handleComment, handleIssue, handleMergeRequest, handlePush, handleTagPush } = require('./handlers.js');
 
 app.post('/msg.json', function (req, res) {
   const eventType = req.body.object_kind;
@@ -106,11 +106,24 @@ app.post('/msg.json', function (req, res) {
           }
         });
       break;
+    case 'build':
+      handleBuild(req.body)
+        .then((response) => {
+          res.send("ok");
+        })
+        .catch((error) => {
+          if (isProd) {
+            rollbar.reportMessageWithPayloadData("Merge Request event error", error);
+          } else {
+            console.error(error);
+          }
+        });
+      break;
     default:
       if (isProd) {
-        rollbar.reportMessage("Unsupported event", error);
+        rollbar.reportMessage("Unsupported event", "error");
       } else {
-        console.error(error);
+        console.error("Unsupported event");
       }
   }
 });
